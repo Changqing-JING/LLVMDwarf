@@ -10,13 +10,18 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
-aux_source_directory(src sourceFiles)
+# Original high-level DIBuilder example (for comparison - too much overhead)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-add_executable(${PROJECT_NAME} ${sourceFiles})
+# Simple DIE-based DWARF generator (recommended middle-layer solution)
+# - Uses DIE classes for automatic type reference management
+# - Direct human-readable output, no binary serialization complexity
+add_executable(${PROJECT_NAME}_Simple src/main_simple.cpp)
 
 # Link against LLVM libraries
 llvm_map_components_to_libnames(llvm_libs 
-    support core codegen object debuginfodwarf
+    support core codegen object debuginfodwarf mc
     AllTargetsCodeGens AllTargetsAsmParsers AllTargetsDescs AllTargetsInfos
 )
 target_link_libraries(${PROJECT_NAME} ${llvm_libs})
+target_link_libraries(${PROJECT_NAME}_Simple ${llvm_libs})
